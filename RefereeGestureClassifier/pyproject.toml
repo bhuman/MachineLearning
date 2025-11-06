@@ -1,0 +1,18 @@
+[project]
+name = "RefereeGestureClassifier"
+version = "0.1.0"
+description = "Referee Gesture Classifier"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "albumentations==2.0.5",
+  "keras==3.8.0",
+  "matplotlib==3.10.1",
+  "numpy==2.0.2",
+  "tensorflow==2.18.0",
+  "tf2onnx==1.16.1",
+  "pathlib==1.0.1",
+]
+
+[tool.setuptools]
+py-modules = ["referee_gesture_classifier"]

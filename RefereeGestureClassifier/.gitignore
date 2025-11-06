@@ -1,0 +1,21 @@
+# JetBrains
+/.idea/
+
+# VS Code
+/.vscode/
+__pycache__
+
+# Configure /data
+/data/**
+!/data/**/*.gitkeep
+/referee_gesture_classifier/dataset/**
+!/referee_gesture_classifier/dataset/*.gitkeep
+extracted_dataset
+
+# Empty /models folder
+/models/*
+!/models/.gitkeep
+
+# Generated files
+/env/docker.conf
+/env/.venv/
