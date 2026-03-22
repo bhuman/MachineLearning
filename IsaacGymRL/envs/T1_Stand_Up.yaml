@@ -44,7 +44,7 @@ algorithm:
   gamma: 0.995
   lam: 0.95
   bound_coef: 1.0
-  entropy_coef: -0.0025
+  entropy_coef: -0.005
   desired_kl: 0.01
   symmetry_coef: 1.e-2
   use_waist: true
