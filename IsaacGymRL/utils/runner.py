@@ -153,7 +153,7 @@ class Runner:
                 # make sure the entropy is not too small
                 # Otherwise policy will stop learning anything
                 min_entropy = -35
-                max_entropy = -10.0
+                max_entropy = -11
                 loss_entropy = torch.mean((torch.clamp(entropy.mean(), min=min_entropy, max=max_entropy) - entropy.mean())**2)
                 loss = (
                     value_loss

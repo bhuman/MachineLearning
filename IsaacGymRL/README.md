@@ -141,8 +141,11 @@ To add a new task, create a config file in `envs/` and register the environment 
 #### Additional Optimization
 
 The training itself can be optimized by using two different sets of parameters for the block `algorithm` in the `.yaml` file.
-First train with a more aggressive set of values to speed up training and ensure local stuck policy states can be resolved.
-Afterwards use a checkpoint that can stand up and use the second set of parameters for further fine tuning.
+First train with a more aggressive set of values to speed up training and ensure local stuck policy states can be resolved for 10k - 20k episodes and 1024 robots.
+Afterwards use a checkpoint that can stand up and use the second set of parameters and more robots for further fine tuning.
+
+You can also test arround with lower entropy values during training to get higher success rate for the stand up, judged by the metric `fall`.
+The ideal metric value for the `fall` reward should be between `[-0.2, 0.0]`. Unfortunatly, the current provided version does not reach this reproducible, only values between `[-0.6, -0.3]`.
 
 #### Progress Tracking
 
