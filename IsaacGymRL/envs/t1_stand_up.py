@@ -328,7 +328,9 @@ class T1_Stand_Up(BaseTask):
 
         self.get_up_poses[:, :, -2] = torch.cumsum(self.get_up_poses[:, :, -1], dim=-1)
 
-        self.spawn_height_offset = torch.tensor(self.cfg["commands"]["spawn_height_offset"], dtype=torch.float32, device=self.device)
+        self.spawn_height = torch.zeros(2, len(self.cfg["commands"]["ref_pose_front"]["poses"]), dtype=torch.float, device=self.device)
+        self.spawn_height[0, :] = torch.tensor(self.cfg["commands"]["ref_pose_front"]["spawn_height"], dtype=torch.float32, device=self.device)
+        self.spawn_height[1, :] = torch.tensor(self.cfg["commands"]["ref_pose_back"]["spawn_height"], dtype=torch.float32, device=self.device)
 
         self.num_keyframes = torch.zeros(2, dtype=torch.int, device=self.device) # ([front|back])
         self.num_keyframes[0] = len(self.cfg["commands"]["ref_pose_front"]["poses"])
@@ -465,6 +467,7 @@ class T1_Stand_Up(BaseTask):
         self.root_states[env_ids, :2] += self.env_origins[env_ids, :2]
         self.root_states[env_ids, :2] = apply_randomization(self.root_states[env_ids, :2], self.cfg["randomization"].get("init_base_pos_xy"))
         self.root_states[env_ids, 2] += self.terrain.terrain_heights(self.root_states[env_ids, :2])
+        self.root_states[env_ids, 2] += self.spawn_height[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1]]
         x_rot = torch.zeros(len(env_ids), dtype=torch.float, device=self.device)
         y_rot = torch.zeros(len(env_ids), dtype=torch.float, device=self.device)
         x_rot[:] = self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], -4]
@@ -477,15 +480,6 @@ class T1_Stand_Up(BaseTask):
             torch.rand(len(env_ids), device=self.device) * (2 * torch.pi),
         )
 
-        # dynamic spawn height
-        self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
-        self.gym.simulate(self.sim)
-        self.render()
-        min_z = torch.min(self.body_states[env_ids, :, 2], dim=1).values
-        # compute per-env spawn height: if the deepest point of the robot is below 0, lift by -min_z + offset, otherwise just offset
-        spawn_height = torch.where(min_z < 0, -min_z + self.spawn_height_offset, self.spawn_height_offset)
-        self.root_states[env_ids, 2] += spawn_height
-  
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def _teleport_robot(self):
