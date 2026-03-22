@@ -138,6 +138,12 @@ Training settings are loaded from `envs/<task>.yaml`. You can also override conf
 
 To add a new task, create a config file in `envs/` and register the environment in `envs/__init__.py`.
 
+#### Additional Optimization
+
+The training itself can be optimized by using two different sets of parameters for the block `algorithm` in the `.yaml` file.
+First train with a more aggressive set of values to speed up training and ensure local stuck policy states can be resolved.
+Afterwards use a checkpoint that can stand up and use the second set of parameters for further fine tuning.
+
 #### Progress Tracking
 
 To visualize training progress with [TensorBoard](https://www.tensorflow.org/tensorboard), run:
@@ -177,4 +183,16 @@ $ python export_model.py --task=T1 --checkpoint=-1
 ```
 
 This gives you the policy as a `.pt`. Follow Booster Robotics [instruction](https://github.com/BoosterRobotics/booster_gym) for the actual deployment.
+
+### 4. Pre-Trained Policies and Reference Code
+
+In the folder `/pre-trained` we provide working stand up policies for the T1 as well as K1.
+Also, we provide our c++ code which we use to execute those policies. Note, that this code is **not** a stand-alone script.
+It is only meant as a reference to show, how to correctly use the policies. On the real robot it is expected that the correct inputs for the policy are used.
+This includes the joint sequence as well as the sensor data.
+Additionally, to prevent unsafe states, like a stand up try that failed but keeps going, we define torso orientations which we interpolate inbetween. If the real robot leaves this defined state we break up the stand up to prevent damage to the robot hardware.
+
+We are **not** responsible for any damage or wrong usage. It is **your** obligation to ensure safety and the correct execution of the policy. It is **your** obligation to test everything in simulation before deploying on the real robot.
+
+This project is **not** meant as a full solution, instead it is meant as a starting point for reinforcement learning and as a very simple solution for stand up motions.
 
