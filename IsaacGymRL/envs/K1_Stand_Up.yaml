@@ -1,0 +1,420 @@
+basic:
+  checkpoint: null # set to -1 to load last saved model
+  headless: false
+  max_iterations: 10000 # set the maximum number of learning iterations to train for
+  sim_device: "cuda:0" # device for physics simulation
+  rl_device: "cuda:0" # device for the RL algorithm
+  seed: 42 # seed - set to -1 to choose random seed
+  description: ""
+
+env:
+  num_envs: 1024
+  num_observations: 73
+  num_privileged_obs: 38
+  num_actions: 22
+  env_spacing: 1.  # not used with plane terrain
+
+runner:
+  horizon_length: 24
+  mini_epochs: 20
+  save_interval: 100
+  use_wandb: true
+
+viewer:
+  pos: [36., 5., 2.]  # [m]
+  lookat: [50., 5., 0.]  # [m]
+  record_video: false  # only in play
+  record_interval: 5.  # [s]
+  record_env_idx: 0
+
+#algorithm:
+#  e_clip: 0.1
+#  learning_rate: 1.e-5
+#  gamma: 0.98
+#  lam: 0.95
+#  bound_coef: 1.0
+#  entropy_coef: -0.007
+#  desired_kl: 0.003
+#  symmetry_coef: 1.e-2
+#  use_waist: false
+
+algorithm:
+  e_clip: 0.2
+  learning_rate: 1.e-5
+  gamma: 0.995
+  lam: 0.95
+  bound_coef: 1.0
+  entropy_coef: -0.01
+  desired_kl: 0.01
+  symmetry_coef: 1.e-2
+  use_waist: false
+
+sim:
+  dt: 0.002
+  substeps: 1
+  up_axis: "z"
+  gravity: [0.0, 0.0, -9.81]
+  physics_engine: "physx" # "physx" or "flex"
+  physx:
+    num_threads: 4 # Number of worker threads per scene used by PhysX - for CPU PhysX only.
+    solver_type: 1 # 0: pgs, 1: tgs
+    num_position_iterations: 4
+    num_velocity_iterations: 1
+    contact_offset: 0.01
+    rest_offset: 0.0
+    bounce_threshold_velocity: 0.2
+    max_depenetration_velocity: 1.0
+    default_buffer_size_multiplier: 5.0
+    max_gpu_contact_pairs: 8388608 # 8*1024*1024
+    num_subscenes: 8 # Splits the simulation into N physics scenes and runs each one in a separate thread
+    contact_collection: 1 # 0: CC_NEVER (don't collect contact info), 1: CC_LAST_SUBSTEP (collect only contacts on last substep), 2: CC_ALL_SUBSTEPS (broken - do not use!)
+
+asset:
+  file: "resources/K1/K1_locomotion_all_joints_simple.urdf"
+  file_mesh: "resources/K1/K1_locomotion_all_joints_mesh.urdf"
+  mujoco_file: "resources/K1/K1_locomotion.xml"
+  name: "K1"
+  base_name: "Trunk"
+  foot_names: ["left_foot_link", "right_foot_link"]
+  lower_body_names: ["Left_Hip_Pitch", "Right_Hip_Pitch"]
+  head_name: ["Head_2"]
+  disable_gravity: false
+  default_dof_drive_mode: 3 # see GymDofDriveModeFlags (0 is none, 1 is pos tgt, 2 is vel tgt, 3 effort)
+  collapse_fixed_joints: true # bug: if collapse_fixed_joints = false, foot doesn't collide with ground
+  fix_base_link: false # fix the base of the robot
+  self_collisions: 0 # 1 to disable, 0 to enable...bitwise filter
+  replace_cylinder_with_capsule: false # replace collision cylinders with capsules, leads to faster/more stable simulation
+  flip_visual_attachments: false # Some .obj meshes must be flipped from y-up to z-up
+  density: 0.001
+  angular_damping: 0.
+  linear_damping: 0.
+  max_angular_velocity: 1000.
+  max_linear_velocity: 1000.
+  armature: 0.
+  thickness: 0.01
+  feet_edge_pos: [[ 0.1185,  0.035, -0.038],
+                  [ 0.1185, -0.035, -0.038],
+                  [-0.0665,  0.035, -0.038],
+                  [-0.0665, -0.035, -0.038]] # x,y,z [m]
+  feet_sole_pos: [0, 0, -0.038]
+  ankle_ids: []
+
+init_state:
+  pos: [0.0, 0.0, 0.0] # x,y,z [m]
+  rot: [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
+  lin_vel: [0.0, 0.0, 0.0]  # x,y,z [m/s]
+  ang_vel: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
+  default_joint_angles: {"Hip_Pitch": -0.2, "Knee_Pitch": 0.4, "Ankle_Pitch": -0.25, "default": 0.} # target angles when action = 0.0
+
+control:
+  stiffness: {"Hip": 80., "Knee": 80., "Ankle": 35., "Shoulder": 40, "Elbow": 40, "Head": 10, "Default": 10} # [N*m/rad]
+  damping: {"Hip": 4, "Knee": 4, "Ankle": 1, "Shoulder": 1, "Elbow": 1, "Head": 1, "Default": 1} # [N*m*s/rad]
+  action_scale: 1.
+  decimation: 10
+
+terrain:
+  type: "trimesh" # "plane" or "trimesh"
+  static_friction: 1.0  # [-]
+  dynamic_friction: 1.0  # [-]
+  restitution: 0.        # [-]
+  # trimesh only:
+  terrain_length: 10.
+  terrain_width: 10.
+  border_size: 15.
+  num_terrains: 8
+  terrain_proportions: [0.0, 0.0, 0.5, 0.5, 0.0] # terrain types: [plane, slope, random, discrete]
+  slope: 0.1
+  random_height: 0.1 # set to 1% when learning ball kicking
+  discrete_height: 0.02 # set to 1% when learning ball kicking
+  horizontal_scale: 0.1
+  vertical_scale: 0.005
+  slope_threshold: 2.0
+  friction:
+    range: [0.2, 2.0]
+    operation: "additive"
+    distribution: "uniform"
+  patch_size: 10
+
+commands:
+  resampling_time_s: [3., 10.]
+  gait_frequency: [1.5, 2] # min max [Hz]
+             #hYaw, hPitch
+             #lSP,  lSR,  lEY,  lER
+             #rSP,  rSR,  rEY,  rER
+             #lHP,  lHR,  lHY,  lKP,  lAP, lAR,
+             #rHP,  rHR,  rHY,  rKP,  rAP, rAR,
+  ref_pose_front:
+    poses: [[0.0,  0,
+             0.4, -1.40, 0.0,   0,
+             0.4,  1.40, 0.0,   0,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0],
+            [0.0,  -0,
+             1.2, -1.40, 0.0,  -2.27,
+             1.2,  1.40, 0.0,   2.27,
+             0.0,  0.35,  0.0,   0.0,  0.0, 0.0,
+             0.0, -0.35,  0.0,   0.0,  0.0, 0.0],
+            [0.0,  -0,
+             0.174, -1.40,  0.0,  -2.27,
+             0.174,  1.40,  0.0,   2.27,
+            -0.3 ,  0.35,  0.0,   0.0,  0.0, 0.0,
+            -0.3  , -0.35,  0.0,   0.0,  0.0, 0.0],
+             [0.0,  -0,
+             -1.57, -1.40,  0.0, -1.50,
+             -1.57,  1.40,  0.0,  1.50,
+             -2.96,  0.35,  0.0,  2.23,  -0.8, 0.0,
+             -2.96, -0.35,  0.0,  2.23,  -0.8, 0.0],
+             [0.0,  -0.35,
+             -1.57, -1.40,  0.0,  0.0,
+             -1.57,  1.40,  0.0,  0.0,
+             -2.96,  0.35,  0.0,  2.23,  -0.08, 0.0,
+             -2.96, -0.35,  0.0,  2.23,  -0.08, 0.0],
+             [0.0,  -0.35,
+             -1.22, -1.40,  0.0,  0.0,
+             -1.22,  1.40,  0.0,  0.0,
+             -2.27,  0.35,  0.0,  2.23,  -0.35, 0.0,
+             -2.27, -0.35,  0.0,  2.23,  -0.35, 0.0],
+             [0.0,   0.0,
+              0.0,  -1.40,  1.57,  0.0,
+              0.0,   1.40,  1.57,  0.0,
+             -0.71,  0.35,  0.0,  0.80,  -0.26, 0.0,
+             -0.71, -0.35,  0.0,  0.80,  -0.26, 0.0]]
+    torso: [[0.0, 1.57],
+            [0.0, 1.6],
+            [0.0, 1.6],
+            [0.0, 1.6],
+            [0.0, 0.96],
+            [0.0, 0.61],
+            [0.0, 0.0]]
+    torso_weight: [0.1, 0.1, 0.1, 0.1, 0.5, 1.0, 1.0]
+    arm_weight: [1.0, 1.0, 0.25, 0.25, 0.5, 0.5, 0.25]
+    leg_weight: [0.5, 0.5, 0.5, 1.0, 1.0, 0.25, 0.5]
+    min_height: [0.05, 0.05, 0.1, 0.26, 0.26, 0.26, 0.5]
+    time: [1, 1.0, 0.5, 1.0, 0.5, 0.25, 1.0]
+    ankle_yaw_hip_roll_weights: [[1, 1, 1, 1], # hip roll, hip yaw, ankle pitch, ankle roll
+                             [1, 1, 1, 1],
+                             [1, 1, 1, 0.25],
+                             [1, 1, 0.5, 0.25],
+                             [0.25, 1, 0.25, 0.25],
+                             [0.1, 1, 0.1, 0.25],
+                             [0.1, 1, 0.1, 0.25]]
+    arm_vel_penalty: [5, 5, 1, 1, 1, 1, 1]
+    feet_slip_jump_penalty: [false, false, false, true, true, true, true]
+    extra_balance_penalty: [false, false, false, false, false, true, true]
+  spawn_height_offset: 0.12
+
+  ref_pose_back:
+    poses: [[0.0,  0.35,
+             0.0, -1.40,  0.0,  0.0,
+             0.0,  1.40,  0.0,  0.0,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0],
+            [0.0,  0.35,
+             0.0,   1.40,  1.57, -1.57,
+             0.0,  -1.40,  1.57,  1.57,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0,
+             0.0,  0.0,  0.0,   0.0,  0.0, 0.0],
+            [0.0,  0.35,
+             0.0,   1.40,  1.57, -1.57,
+             0.0,  -1.40,  1.57,  1.57,
+            -1.31,  0.0,   0.0,   2.10,  0.0, 0.0,
+            -1.31,  0.0,   0.0,   2.10,  0.0, 0.0],
+             [0.0,  0.35,
+             -0.87,  1.40,  1.57, -1.57,
+             -0.87, -1.40,  1.57,  1.57,
+             0.0,   0.0,   0.0,   2.10,  0.3, 0.0,
+             0.0,   0.0,   0.0,   2.10,  0.3, 0.0],
+             [0.0,  0.35,
+             -0.87,  1.40,  1.57, -1.57,
+             -0.87, -1.40,  1.57,  1.57,
+              1.92,  0.0,   0.0,  1.4,  -0.52, 0.0,
+              1.92,  0.0,   0.0,  1.4,  -0.52, 0.0],
+             [0.0,  0.35,
+             -0.87,  1.40,  1.57,  0.0,
+             -0.87, -1.40,  1.57,  0.0,
+              1.57,  0.0,   0.0,   0.78,  -0.52, 0.0,
+              1.57,  0.0,   0.0,   0.78,  -0.52, 0.0],
+             [0.0,   0.0,
+              0.0,  -1.40,  1.57,  0.0,
+              0.0,   1.40,  1.57,  0.0,
+             -0.71,  0.0,  0.0,  0.80,  -0.26, 0.0,
+             -0.71, -0.0,  0.0,  0.80,  -0.26, 0.0]]
+    torso: [[0.0, -1.57],
+            [0.0, -1.57],
+            [0.0, -1.57],
+            [0.0, -2.00],
+            [0.0, -2.44],
+            [0.0, -1.57],
+            [0.0, 0.0]]
+    torso_weight: [0.1, 0.1, 0.1, 0.1, 0.5, 1.0, 1.0]
+    arm_weight: [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.25]
+    leg_weight: [0.5, 0.5, 0.5, 0.5, 0.5, 0.25, 0.5]
+    min_height: [0.05, 0.05, 0.05, 0.15, 0.3, 0.32, 0.5]
+    time: [1.0, 1.5, 0.5, 0.5, 0.75, 0.75, 1.0]
+    ankle_yaw_hip_roll_weights: [[1, 1, 1, 1],
+                             [1, 1, 1, 1],
+                             [1, 1, 0.25, 0.25],
+                             [0.1, 1, 0.1, 0.25],
+                             [0.1, 1, 0.1, 0.25],
+                             [0.1, 1, 0.1, 0.25],
+                             [0.1, 1, 0.1, 0.25]]
+    arm_vel_penalty: [5, 5, 1, 1, 1, 1, 1]
+    feet_slip_jump_penalty: [false, false, false, true, true, true, true]
+    extra_balance_penalty: [false, false, false, false, true, true, true]
+
+normalization:
+  gravity: 1.0
+  lin_vel: 1.0
+  ang_vel: 1.0
+  dof_pos: 1.0
+  dof_vel: 0.1
+  push_force: 0.1
+  push_torque: 0.5
+  clip_actions: 3.0
+  filter_weight: 0.3
+
+noise:
+  gravity:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  lin_vel:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  ang_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  height:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+  initial_torso:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+
+randomization:
+  init_dof_pos:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  init_base_pos_xy:
+    range: [-1., 1.]
+    operation: "additive"
+    distribution: "uniform"
+
+  kick_interval_s: 2.5
+  kick_lin_vel:
+    range: [0., 0.15]
+    operation: "additive"
+    distribution: "gaussian"
+  kick_ang_vel:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+
+  push_interval_s: 5.
+  push_duration_s: 2.
+  push_force:
+    range: [0., 10.]
+    operation: "additive"
+    distribution: "gaussian"
+  push_torque:
+    range: [0., 2.]
+    operation: "additive"
+    distribution: "gaussian"
+
+  dof_stiffness:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_damping:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_friction:
+    range: [0.0, 2.0]
+    operation: "additive"
+    distribution: "uniform"
+
+  friction:
+    range: [0.2, 2.0]
+    operation: "additive"
+    distribution: "uniform"
+  compliance:
+    range: [0.5, 1.5]
+    operation: "additive"
+    distribution: "uniform"
+  restitution:
+    range: [0.1, 0.9]
+    operation: "additive"
+    distribution: "uniform"
+
+  base_com:
+    range: [-0.1, 0.1]
+    operation: "additive"
+    distribution: "uniform"
+  base_mass:
+    range: [0.8, 1.2]
+    operation: "scaling"
+    distribution: "uniform"
+  other_com:
+    range: [-0.005, 0.005]
+    operation: "additive"
+    distribution: "uniform"
+  other_mass:
+    range: [0.98, 1.02]
+    operation: "scaling"
+    distribution: "uniform"
+
+rewards:
+  scales:
+    tracking_ref_pose: 5 # If all joints and the torso orientation are on point, this is the max reward
+    orientation: -5.
+    torques: -2.e-4
+    torque_tiredness: -1.e-2
+    power: -2.e-3
+    lin_vel_z: -2.
+    ang_vel_xy: -0.2
+    dof_vel: -1.e-3
+    dof_acc: -1.e-7
+    root_acc: -1.e-5
+    action_rate: -3.
+    dof_pos_limits: -1.
+    actions_in_range: -1.
+    action_pos_limits: -1.
+    feet_slip: -0.1
+    fall: -100.
+    body_parts_vel_z: -0.1
+    leg_torso_deviation_penalty: -10
+    jump: -10
+    collision: -0.01
+    feet_distance: -1
+    #body_in_soles: -10
+
+  episode_length_s: 10.
+  terminate_vel: 500.
+  terminate_time: 0.1
+  penalize_contacts_on: ["Head_1", "AAHead_yaw", "Arm", "hand_link", "Hip", "Shank", "Ankle"]
+  only_positive_rewards: false # if true negative total rewards are clipped at zero (avoids early termination problems)
+  tracking_joint_sigma: 0.5
+  tracking_torso_sigma: 0.15
+  tracking_joint_max_torso_diff_sigma: 0.25
+  penalty_joint_first_keyframe_threshold: 0.1
+  penalty_joint_threshold: 0.5
+  penalty_torso_threshold: 0.25
+  tracking_penalty_torso_weight: 0.5
+  soft_dof_pos_limit: 1. # percentage of urdf limits, values above this limit are penalized
+  soft_dof_vel_limit: 1.
+  soft_torque_limit: 1.
+  feet_distance_ref: 0.2
