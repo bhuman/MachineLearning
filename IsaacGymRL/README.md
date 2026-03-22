@@ -2,9 +2,11 @@
 
 Booster Gym is a reinforcement learning (RL) framework designed for humanoid robot locomotion developed by [Booster Robotics](https://boosterobotics.com/).
 
-[![real_T1_deploy](https://obs-cdn.boosterobotics.com/rl_deploy_demo_video_v3.gif)](https://obs-cdn.boosterobotics.com/rl_deploy_demo_video.mp4)
-
 This project builds on the published [Booster Gym](https://github.com/BoosterRobotics/booster_gym) for an environment to learn stand up motions for the Booster T1 and Booster K1.
+
+[![sim_stand_up](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up_Env.webm)](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up_Env.webm)
+
+[![sim_stand_up](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up.mp4)](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up.mp4)
 
 ## Features
 
