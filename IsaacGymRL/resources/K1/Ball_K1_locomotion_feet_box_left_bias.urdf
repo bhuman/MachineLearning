@@ -93,19 +93,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Head_1.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="AAHead_yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0056 0 0.2149"
       rpy="0 0 0" />
@@ -152,19 +143,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Head_2.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Head_pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0 0.033"
       rpy="0 0 0" />
@@ -214,7 +196,7 @@
   </link>
   <joint
     name="ALeft_Shoulder_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0.077 0.1845"
       rpy="0 0 0" />
@@ -261,21 +243,13 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="-0.007 0 0"
-        rpy="0 1.5708 0" />
-      <geometry>
-        <cylinder radius="0.035" length="0.068" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Shoulder_Roll"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0025 0.068 -0.0135"
-      rpy="0 0 0" />
+      rpy="-1.35 0 0" />
     <parent
       link="Left_Arm_1" />
     <child
@@ -319,19 +293,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Left_Arm_3.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Elbow_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0.044428 0"
       rpy="0 0 0" />
@@ -378,19 +343,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Left_Arm_4.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Elbow_Yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0.1215 0"
       rpy="0 0 0" />
@@ -440,7 +396,7 @@
   </link>
   <joint
     name="ARight_Shoulder_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.077 0.1845"
       rpy="0 0 0" />
@@ -487,21 +443,13 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="-0.007 0 0"
-        rpy="0 1.5708 0" />
-      <geometry>
-        <cylinder radius="0.035" length="0.068" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Shoulder_Roll"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0025 -0.068 -0.0135"
-      rpy="0 0 0" />
+      rpy="1.35 0 0" />
     <parent
       link="Right_Arm_1" />
     <child
@@ -545,19 +493,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Right_Arm_3.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Elbow_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.044428 0"
       rpy="0 0 0" />
@@ -604,19 +543,10 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Right_Arm_4.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Elbow_Yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.1215 0"
       rpy="0 0 0" />
@@ -832,11 +762,18 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0.0"
+        xyz="0 0 0"
+        rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.045" length="0.07" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin
+        xyz="0 0 -0.13"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Left_Shank.STL" scale="1 1 0.8" />
+        <box size="0.08 0.07 0.13" />
       </geometry>
     </collision>
   </link>
@@ -941,11 +878,18 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.026 0 -0.030"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Left_Foot.STL" />
+        <box size="0.180 0.07 0.016" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin
+        xyz="0.11 0.015 0.002"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.005 0.01" />
       </geometry>
     </collision>
   </link>
@@ -1168,10 +1112,17 @@
     <collision>
       <origin
         xyz="0 0 0"
+        rpy="1.5708 0 0" />
+      <geometry>
+        <cylinder radius="0.045" length="0.07" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin
+        xyz="0 0 -0.13"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Right_Shank.STL" scale="1 1 0.8"/>
+        <box size="0.08 0.07 0.13" />
       </geometry>
     </collision>
   </link>
@@ -1276,11 +1227,19 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.026 0 -0.03"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Right_Foot.STL" />
+        <box size="0.180 0.07 0.016" />
+      </geometry>
+    </collision>
+    
+    <collision>
+      <origin
+        xyz="0.11 0.015 0.002"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.005 0.01" />
       </geometry>
     </collision>
   </link>
@@ -1303,4 +1262,5 @@
       velocity="18.1"
     />
   </joint>
+ 
 </robot>

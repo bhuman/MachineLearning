@@ -2,7 +2,7 @@
 
 Booster Gym is a reinforcement learning (RL) framework designed for humanoid robot locomotion developed by [Booster Robotics](https://boosterobotics.com/).
 
-This project builds on the published [Booster Gym](https://github.com/BoosterRobotics/booster_gym) for an environment to learn stand up motions for the Booster T1 and Booster K1.
+This project builds on the published [Booster Gym](https://github.com/BoosterRobotics/booster_gym) for an environment to learn stand up, walking and kicking motions for the Booster T1 and Booster K1.
 
 [![sim_stand_up](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up_Env.gif)](https://b-human.informatik.uni-bremen.de/public/MachineLearning/IsaacGym/Stand_Up_Env.webm)
 
@@ -11,10 +11,13 @@ This project builds on the published [Booster Gym](https://github.com/BoosterRob
 ## Features
 
 - Training a stand up policy for the K1 and T1.
-- One policy that handles both standing up from the back and front.
-- The learned motion is inspired by Booster Robotics K1 and T1 stand up.
+    - One policy that handles both standing up from the back and front.
+    - The learned motion is inspired by Booster Robotics K1 and T1 stand up.
+- Training a walking policy for the K1 and T1.
+- Training a kicking policy for the K1 and T1.
 - The environment includes simulation fixes for IsaacGym, like fixes for the ground friction.
 - The environment includes sim2real fixes.
+- We also provided already trained policies, which were also used by B-Human at the RoboCup 2026.
 
 ## Overview
 
@@ -112,7 +115,7 @@ In case there are problems with numpy or torchvision, install them once again an
 
 ### 1. Training
 
-To start training a policy, run the following command for K1:
+To start training a policy for (as example) standing up, run the following command for K1:
 
 ```sh
 $ python train.py --task=K1_Stand_Up --headless=0
@@ -126,6 +129,22 @@ $ python train.py --task=T1_Stand_Up --headless=0
 
 Training logs and saved models will be stored in `logs/<date-time>/`.
 
+If a walk policy is trained, we additionally recommend using the `--history` flag to activate a symmetry loss:
+
+```sh
+$ python train.py --history --task=K1 --headless=0
+```
+
+### Supported Environments
+
+We support the following tasks:
+
+| Task        | K1 Name         | T1 Name         |
+| =========== | =============== | =============== |
+| Walking     | **K1**          | **T1**          |
+| Kicking     | **K1_Ball**     | **T1_Ball**     |
+| Standing Up | **K1_Stand_Up** | **T1_Stand_Up** |
+
 #### Configurations
 
 Training settings are loaded from `envs/<task>.yaml`. You can also override config values using command-line arguments:
@@ -137,17 +156,9 @@ Training settings are loaded from `envs/<task>.yaml`. You can also override conf
 - `--rl_device`: Device for the RL algorithm (e.g., `cuda:0`, `cpu`). 
 - `--seed`: Random seed.
 - `--max_iterations`: Maximum number of training iterations.
+- `--history`: Use the history runner, which applies symmetry.
 
 To add a new task, create a config file in `envs/` and register the environment in `envs/__init__.py`.
-
-#### Additional Optimization
-
-The training itself can be optimized by using two different sets of parameters for the block `algorithm` in the `.yaml` file.
-First train with a more aggressive set of values to speed up training and ensure local stuck policy states can be resolved for 10k - 20k episodes and 1024 robots.
-Afterwards use a checkpoint that can stand up and use the second set of parameters and more robots for further fine tuning.
-
-You can also test arround with lower entropy values during training to get higher success rate for the stand up, judged by the metric `fall`.
-The ideal metric value for the `fall` reward should be between `[-0.2, 0.0]`. Unfortunatly, the current provided version does not reach this reproducible, only values between `[-0.6, -0.3]`.
 
 #### Progress Tracking
 
@@ -171,7 +182,7 @@ You can disable W&B tracking by setting `use_wandb` to `false` in the config fil
 
 #### In-Simulation Testing
 
-To test the trained policy in Isaac Gym, run:
+To test the trained policy in Isaac Gym, for example a walk policy for the T1, run:
 
 ```sh
 $ python play.py --task=T1 --checkpoint=-1
@@ -189,13 +200,18 @@ $ python export_model.py --task=T1 --checkpoint=-1
 
 This gives you the policy as a `.pt`. Follow Booster Robotics [instruction](https://github.com/BoosterRobotics/booster_gym) for the actual deployment.
 
+You can additionally use the script `convert.py` to convert a .py policy into a .onnx file.
+
 ### 4. Pre-Trained Policies and Reference Code
 
-In the folder `/pre-trained` we provide working stand up policies for the T1 as well as K1.
+In the folder `/pre-trained` we provide working stand up, walk and kick policies for the T1 as well as K1.
 Also, we provide our c++ code which we use to execute those policies. Note, that this code is **not** a stand-alone script.
 It is only meant as a reference to show, how to correctly use the policies. On the real robot it is expected that the correct inputs for the policy are used.
 This includes the joint sequence as well as the sensor data.
+
 Additionally, to prevent unsafe states, like a stand up try that failed but keeps going, we define torso orientations which we interpolate inbetween. If the real robot leaves this defined state we break up the stand up to prevent damage to the robot hardware.
+
+Also for the kick policies, the relative ball position and velocity are defined relative to the point **between both sole origins** (shifted by the thickness of the sole towards the ground).
 
 We are **not** responsible for any damage or wrong usage. It is **your** obligation to ensure safety and the correct execution of the policy. It is **your** obligation to test everything in simulation before deploying on the real robot.
 

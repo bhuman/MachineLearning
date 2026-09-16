@@ -1,0 +1,495 @@
+basic:
+  checkpoint: null # set to -1 to load last saved model
+  headless: false
+  max_iterations: 200000 # set the maximum number of learning iterations to train for
+  sim_device: "cuda:0" # device for physics simulation
+  rl_device: "cuda:0" # device for the RL algorithm
+  seed: 42 # seed - set to -1 to choose random seed
+  description: ""
+
+env:
+  num_envs: 4096
+  num_observations: 59
+  num_privileged_obs: 16
+  num_actions: 13
+  env_spacing: 1.  # not used with plane terrain
+
+runner:
+  horizon_length: 24
+  mini_epochs: 20
+  save_interval: 100
+  use_wandb: true
+
+viewer:
+  pos: [36., 5., 2.]  # [m]
+  lookat: [50., 5., 0.]  # [m]
+  record_video: false  # only in play
+  record_interval: 5.  # [s]
+  record_env_idx: 0
+
+algorithm:
+  e_clip: 0.2
+  learning_rate: 1.e-8
+  gamma: 0.98
+  lam: 0.95
+  bound_coef: 1.0
+  entropy_coef: -0.01
+  desired_kl: 0.01 # 0.003 later
+  symmetry_coef: 1.e-2
+  use_waist: false
+  entropy_range:
+    min: -11 # -16.5 later
+    max: -10 # -16 later
+  learning_rate_range:
+    min: 1.e-4 # 1e-5 later
+    max: 1.e-2
+
+sim:
+  dt: 0.002
+  substeps: 1
+  up_axis: "z"
+  gravity: [0.0, 0.0, -9.81]
+  physics_engine: "physx" # "physx" or "flex"
+  physx:
+    num_threads: 4 # Number of worker threads per scene used by PhysX - for CPU PhysX only.
+    solver_type: 1 # 0: pgs, 1: tgs
+    num_position_iterations: 4
+    num_velocity_iterations: 1
+    contact_offset: 0.01
+    rest_offset: 0.0
+    bounce_threshold_velocity: 0.2
+    max_depenetration_velocity: 1.0
+    default_buffer_size_multiplier: 5.0
+    max_gpu_contact_pairs: 8388608 # 8*1024*1024
+    num_subscenes: 8 # Splits the simulation into N physics scenes and runs each one in a separate thread
+    contact_collection: 1 # 0: CC_NEVER (don't collect contact info), 1: CC_LAST_SUBSTEP (collect only contacts on last substep), 2: CC_ALL_SUBSTEPS (broken - do not use!)
+
+asset:
+  files: ["resources/K1/K1_locomotion.urdf", "resources/K1/Ball_K1_locomotion_feet_box_left_bias.urdf", "resources/K1/Ball_K1_locomotion_feet_box_right_bias.urdf"]
+  mujoco_file: "resources/K1/K1_locomotion.xml"
+  name: "K1_Ball"
+  base_name: "Trunk"
+  foot_names: ["left_foot_link", "right_foot_link"]
+  origin_names: ["Left_Hip_Pitch", "Right_Hip_Pitch"]
+  ball_shank_collision_links: ["Left_Shank", "Right_Shank"]
+  ball_ankle_collision_links: ["Left_Ankle_Cross", "Right_Ankle_Cross"]
+  disable_gravity: false
+  default_dof_drive_mode: 3 # see GymDofDriveModeFlags (0 is none, 1 is pos tgt, 2 is vel tgt, 3 effort)
+  collapse_fixed_joints: true # bug: if collapse_fixed_joints = false, foot doesn't collide with ground
+  fix_base_link: false # fix the base of the robot
+  self_collisions: 0 # 1 to disable, 0 to enable...bitwise filter
+  replace_cylinder_with_capsule: false # replace collision cylinders with capsules, leads to faster/more stable simulation
+  flip_visual_attachments: false # Some .obj meshes must be flipped from y-up to z-up
+  density: 0.001
+  angular_damping: 0.
+  linear_damping: 0.
+  max_angular_velocity: 1000.
+  max_linear_velocity: 1000.
+  armature: 0.
+  thickness: 0.01
+  feet_edge_pos: [[ 0.1185,  0.035, -0.038],
+                  [ 0.1185, -0.035, -0.038],
+                  [-0.0665,  0.035, -0.038],
+                  [-0.0665, -0.035, -0.038]] # x,y,z [m]
+  feet_sole_pos: [0, 0, -0.038]
+  ball:
+    radius: 0.095
+    mass: 0.290
+
+init_state:
+  pos: [0.0, 0.0, 0.60] # x,y,z [m]
+  rot: [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
+  lin_vel: [0.0, 0.0, 0.0]  # x,y,z [m/s]
+  ang_vel: [0.0, 0.0, 0.0]  # x,y,z [rad/s]
+  default_joint_angles: {"Hip_Pitch": -0.2, "Knee_Pitch": 0.4, "Ankle_Pitch": -0.25, "default": 0.} # target angles when action = 0.0
+
+control:
+  # Real Robot should use those values:
+  #stiffness: {"Hip_Roll": 80., "Hip_Pitch": 80., "Hip_Yaw": 80., "Knee": 80., "Ankle_Pitch": 50., "Ankle_Roll": 25., "Default": 10} # [N*m/rad]
+  #damping: {"Hip_Roll": 4, "Hip_Pitch": 4, "Hip_Yaw": 4, "Knee": 4, "Ankle_Pitch": 2, "Ankle_Roll": 2, "Default": 1} # [N*m*s/rad]
+  # Values for IsaacGym
+  stiffness: {"Hip_Roll": 80., "Hip_Pitch": 80., "Hip_Yaw": 80., "Knee": 80., "Ankle_Pitch": 50., "Ankle_Roll": 60., "Default": 10} # [N*m/rad]
+  damping: {"Hip_Roll": 4, "Hip_Pitch": 4, "Hip_Yaw": 4, "Knee": 4, "Ankle_Pitch": 2, "Ankle_Roll": 2, "Default": 1} # [N*m*s/rad]
+  armature: {"Hip_Pitch": 0.0478125, "Hip_Roll": 0.0339552, "Hip_Yaw": 0.0282528, "Knee": 0.095625, "Ankle": 0.0565056}
+  torque_prefered: [50, 50, 30, 60, 30, 30, 50, 50, 30, 60, 30, 30]
+  torque_clipping: [50, 50, 30, 60, 30, 30, 50, 50, 30, 60, 30, 30] # [80, 60, 40, 70, 36, 36, 80, 60, 40, 70, 36, 36] values to be used based on "real" limits of the K1 motors
+  allow_unknown_joints: True
+  action_scale: 1.
+  decimation: 10
+
+terrain:
+  type: "trimesh" # "plane" or "trimesh"
+  static_friction: 1.0  # [-]
+  dynamic_friction: 1.0  # [-]
+  restitution: 0.        # [-]
+  # trimesh only:
+  terrain_length: 20.
+  terrain_width: 10.
+  border_size: 15.
+  num_terrains: 8
+  terrain_proportions: [0.6, 0.0, 0.20, 0.20, 0.0] # terrain types: [plane, slope, random, discrete, stairs]
+  slope: 0.1
+  random_height: 0.075
+  discrete_height: 0.02
+  horizontal_scale: 0.1
+  vertical_scale: 0.005
+  slope_threshold: 2
+  stairs_width: 0.5
+  step_height: -0.1
+  friction:
+    range: [0.3, 1.0]
+    operation: "additive"
+    distribution: "uniform"
+  patch_size: 5
+
+commands:
+  resampling_kick_type: [2., 20.]
+  random_ball_reset: [0.0001, 0.0001, 0.0001] # Initial [0.0001, 0.0001, 0.0001], final [0.01, 0.02, 0.02], [~flag_allow_deviation, flag_allow_deviation, flag_allow_deviation & flag_is_strong_kick]; final values could also be further increased
+  random_ball_distance_reset: 0.00005 # Initial 0.00005, final 0.0005
+  ball_freeze_at_kick: 0.2 # after kick registered, freeze ball position with this probability
+  distance_reset: [0.3, 0.5]
+  force_ball_close: 0.1
+  keep_old_ball_when_reset: 0.2
+  reset_ball_request: 0.0001 # Initial 0.0001, final 0.005
+  add_ball_vel: 0.00001 # Initial 0.00001, final 0.0001
+  add_ball_vel_max_velocity: 0.5
+  add_ball_vel_in_direction: 0.00001 # Initial 0.00001, final 0.0001
+  add_ball_vel_in_direction_max_velocity: 0.5
+  ball_vel_in_direction_range:
+    range: [0., 0.5]
+    operation: "additive"
+    distribution: "gaussian"
+
+normalization:
+  gravity: 1.0
+  lin_vel: 1.0
+  ang_vel: 1.0
+  dof_pos: 1.0
+  dof_vel: 0.1
+  ball_pos: 0.1
+  ball_vel: 0.1
+  ball_kick_range: 0.1
+  filter_weight_low_speed: 0.3
+  filter_weight: 0.1
+  filter_weight_speed_range: 0.1
+  push_force: 0.1
+  push_torque: 0.5
+  clip_actions: 2.0
+  action_frequence_limit: [-0.5, 0.5]
+
+noise:
+  gravity:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  lin_vel:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  ang_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_vel:
+    range: [0., 0.5]
+    operation: "additive"
+    distribution: "gaussian"
+  height:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_pos_noise_scale_range: [0.5, 10.0]
+  ball_pos_noise_x:
+    range: [0.03, 2.0]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_pos_noise_y:
+    range: [0.03, 0.35]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_pos_noise_dummy:
+    range: [0, 1]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_pos_odo_noise_x:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_pos_odo_noise_y:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_vel_noise:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_vel_scale_noise_x:
+    range: [0.0, 2.0]
+    operation: "scaling"
+    distribution: "uniform"
+  ball_vel_scale_noise_y:
+    range: [0.0, 2.0]
+    operation: "scaling"
+    distribution: "uniform"
+  ball_range_noise:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  ball_direction_noise:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+
+randomization:
+  init_dof_pos:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos_offset_pitch:
+    range: [0., 0.02]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos_offset_roll:
+    range: [0., 0.01]
+    operation: "additive"
+    distribution: "gaussian"
+  dof_pos_offset_other:
+    range: [0., 0.005]
+    operation: "additive"
+    distribution: "gaussian"
+  init_base_pos_xy:
+    range: [-1., 1.]
+    operation: "additive"
+    distribution: "uniform"
+  init_base_lin_vel_xy:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  init_base_lin_vel_z:
+    range: [0., 0.05]
+    operation: "additive"
+    distribution: "gaussian"
+  init_base_ang_vel_xyz:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  init_ball_pos_x:
+    range: [0.4, 1.5]
+    operation: "additive"
+    distribution: "uniform_log"
+  init_ball_pos_far_x:
+    range: [0.6, 1.5]
+    operation: "additive"
+    distribution: "uniform_log"
+  init_ball_vel:
+    range: [0.0, 7.5]
+    operation: "additive"
+    distribution: "uniform_log"
+
+  kick_interval_s: 3.
+  kick_lin_vel:
+    range: [0., 0.3]
+    operation: "additive"
+    distribution: "gaussian"
+  kick_lin_vel_z:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+  kick_ang_vel:
+    range: [0., 0.1]
+    operation: "additive"
+    distribution: "gaussian"
+
+  push_interval_s: 5.
+  push_duration_s: 2.
+  push_force:
+    range: [0., 5.]
+    operation: "additive"
+    distribution: "gaussian"
+  push_torque:
+    range: [0., 2.]
+    operation: "additive"
+    distribution: "gaussian"
+
+  dof_stiffness:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_ankle_stiffness:
+    range: [0.8, 1.2]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_hiproll_stiffness:
+    range: [0.9, 1.1]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_damping:
+    range: [0.95, 1.05]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_ankle_damping:
+    range: [0.9, 1.1]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_hiproll_damping:
+    range: [0.9, 1.1]
+    operation: "scaling"
+    distribution: "uniform"
+  dof_friction:
+    range: [0.0, 2.0]
+    operation: "additive"
+    distribution: "uniform"
+
+  friction:
+    range: [0.3, 1.5]
+    operation: "additive"
+    distribution: "uniform"
+  compliance:
+    range: [0.5, 1.5]
+    operation: "additive"
+    distribution: "uniform"
+  restitution:
+    range: [0.1, 0.9]
+    operation: "additive"
+    distribution: "uniform"
+
+  base_com_x:
+    range: [-0.1, 0.1]
+    operation: "additive"
+    distribution: "uniform"
+  base_com_y:
+    range: [-0.1, 0.1]
+    operation: "additive"
+    distribution: "uniform"
+  base_com_z:
+    range: [-0.1, 0.1]
+    operation: "additive"
+    distribution: "uniform"
+  base_mass:
+    range: [0.8, 1.2]
+    operation: "scaling"
+    distribution: "uniform"
+  other_com:
+    range: [-0.005, 0.005]
+    operation: "additive"
+    distribution: "uniform"
+  other_mass:
+    range: [0.98, 1.02]
+    operation: "scaling"
+    distribution: "uniform"
+
+  ball_radius:
+    range: [-0.01, 0.01]
+    operation: "additive"
+    distribution: "uniform"
+  ball_mass:
+    range: [-0.01, 0.01]
+    operation: "additive"
+    distribution: "uniform"
+
+ball:
+    kick_strong:
+      range: 20
+    kick_normal:
+      range:
+        range: [0.5, 20.0]
+        operation: "additive"
+        distribution: "uniform_log"
+
+rewards:
+  scales:
+    terminate: -100
+    base_height: -40.
+    orientation: -5.
+    torques: -2.e-4 # Torques can be reduces too, 50-90%. Initial -2.e-4
+    torque_tiredness: -1.e-2 # Torques can be reduces too, 50-90%, Initial -1.e-2
+    power: -2.e-3
+    lin_vel_z: -2.
+    ang_vel_xy: -0.2
+    dof_vel: -1.e-4 # Could be reduced down to -1.e-5
+    dof_acc: -1.e-7
+    root_acc: -1.e-4
+    action_rate: -1.0
+    dof_pos_limits: -1.
+    actions_in_range: -1. # Could be reduced down to 0
+    action_pos_limits: -1. # Could be reduced down to 0
+    dof_vel_limits: -0.
+    torque_limits: -0.01 # Torques can be reduces too, 50-90%, Initial -0.01
+    collision: -1.
+    feet_slip: -0.1
+    #feet_slip_z_rot: -1.e-6
+    #feet_vel_z: -0.1
+    feet_yaw_diff: -0.25
+    feet_yaw_mean: -0.25
+    feet_roll: -0.1
+    feet_swing: 3 # Initial 3, reduce down to 0.75
+    feet_distance: -0.25
+    ground_pressure: -0.1
+    gait_phase_factor: -0.1
+    feet_height: -0.25
+    # Ball rewards
+    ball_kick_velocity: 4
+    ball_kick_velocity_strong: 5 # Stays at 5
+    ball_kick_direction: 10 # Initial 10, reduce down to 5
+    ball_walk_speed: 2 # Initial 2, reduce down to 0.75
+    #ball_sole_yaw: 25 # Initial 25, reduce down to 0
+    ball_walk_target_overshoot: -100 # Initial -100, reduce down to -10 and final 0
+
+  episode_length_s: 30.
+  episode_number_of_kicks: 3
+  terminate_height: 0.30
+  terminate_height_range: [0.4, 0.6]
+  terminate_vel: 400.
+  terminate_time: 0.1
+  terminate_contacts_on: []
+  penalize_contacts_on: ["Trunk", "H1", "H2", "AL", "AR", "Waist", "Hip", "Shank", "Ankle"]
+  only_positive_rewards: false # if true negative total rewards are clipped at zero (avoids early termination problems)
+  base_height_target: 0.50
+  soft_dof_pos_limit: 0.95 # percentage of urdf limits, values above this limit are penalized
+  soft_dof_vel_limit: 1.
+  soft_torque_limit: 1.
+  swing_period: 0.2
+  feet_distance_ref: 0.192
+  feet_height_ref: 0.02
+  target_frequence: 1.5
+
+  ball_parameters:
+    time_after_kick: 20
+    kick_pose_y_off: 0.06
+    ball_y_dis_ratio: [2.0, 2.0]
+    walk_to_ball_deadzone: 0.2
+    ball_kicked_start_counter: 1
+    ball_kicked_sole_direction_counter: 5
+    ball_kicked_max_counter: 50
+    ball_kicked_clipped_counter: 10
+    ball_kicked_clipped_vel_counter: 5
+    ball_walk_vision_sigma: 0.75
+    ball_walk_direction_sigma: 0.75
+    kick_direction_sigma_range: 1 # 1 for training from scratch, 0.05 for final training
+    kick_direction_sigma_just_hit: 1 # 1 for training from scratch, 0.5 for final training
+    ball_friction: 0.3
+    ball_velocity_range_sigma_scale: 1 # 1 for training from scratch, 0.5 for final training
+    ball_avoidance_range: 0.55
+    kick_pose_x: [0.0, -0.35]
+    ball_distance_offset: 0.3 # 0.3 initial, 0.7 final
+    ball_rotation_offset: 0.1 # 0.1 initial, 0.2 final
+    base_height_scaling: [0.45, 0.49]
+    kick_pose_increase_value: 0.025 # 0.025 initial, 0.2 final
+    clip_max_speed_near_ball: 0.5
+    kick_direction_negative_factor: 0.1 # 0.1 for training from scratch, 3 for final training
+    negative_walk_speed_factor: 1
+    target_sole_yaw_angle: 0 # 0 initial, 1.5705 afterwards
+    target_sole_yaw_sigma: 1 # 1 for initial, 0.1 final
+    heavy_ball: 0.0 # 0 Initial, 0.0001 final
+    disable_sole_yaw_direction_penalty: false
+    disable_deviation_flag: true
+    disable_extra_deviation_flag: true
+
+# List of parameters that need to be scaled for the staged training
+# kick_direction_negative_factor, clip_max_speed_near_ball, ball_velocity_range_sigma_scale, kick_direction_sigma_just_hit, kick_direction_sigma_range,
+# *_ball_reset probabilities, reward weights, domain randomization
+

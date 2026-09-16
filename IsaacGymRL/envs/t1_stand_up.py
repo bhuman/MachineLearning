@@ -303,6 +303,30 @@ class T1_Stand_Up(BaseTask):
             if not found:
                 self.default_dof_pos[:, i] = self.cfg["init_state"]["default_joint_angles"]["default"]
 
+        # spawn variants data
+        if self.cfg["commands"].get("use_spawn_variants", False): 
+            left_arm_variants = self.cfg["commands"]["spawn_variants"].get("left_arm", [])
+            right_arm_variants = self.cfg["commands"]["spawn_variants"].get("right_arm", [])
+            legs_variants = self.cfg["commands"]["spawn_variants"].get("legs", [])
+            self.left_arm_variants = torch.tensor(left_arm_variants, dtype=torch.float32, device=self.device)
+            self.right_arm_variants = torch.tensor(right_arm_variants, dtype=torch.float32, device=self.device)
+            self.legs_variants = torch.tensor(legs_variants, dtype=torch.float32, device=self.device)
+            left_arm_names = ["Left_Shoulder_Pitch", "Left_Shoulder_Roll", "Left_Elbow_Pitch", "Left_Elbow_Yaw"]
+            right_arm_names = ["Right_Shoulder_Pitch", "Right_Shoulder_Roll", "Right_Elbow_Pitch", "Right_Elbow_Yaw"]
+            legs_names = ["Left_Hip_Pitch", "Left_Hip_Roll", "Left_Hip_Yaw", "Left_Knee_Pitch", "Left_Ankle_Pitch", "Left_Ankle_Roll", 
+                            "Right_Hip_Pitch", "Right_Hip_Roll", "Right_Hip_Yaw", "Right_Knee_Pitch", "Right_Ankle_Pitch", "Right_Ankle_Roll"]
+            def get_indices(names):
+                indices = []
+                for name in names:
+                    for i, dof in enumerate(self.dof_names):
+                        if name in dof:
+                            indices.append(i)
+                            break
+                return indices
+            self.left_arm_indices = get_indices(left_arm_names)
+            self.right_arm_indices = get_indices(right_arm_names)
+            self.legs_indices = get_indices(legs_names)
+
         self.zero_obs = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
         self.ones_obs = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
 
@@ -328,9 +352,7 @@ class T1_Stand_Up(BaseTask):
 
         self.get_up_poses[:, :, -2] = torch.cumsum(self.get_up_poses[:, :, -1], dim=-1)
 
-        self.spawn_height = torch.zeros(2, len(self.cfg["commands"]["ref_pose_front"]["poses"]), dtype=torch.float, device=self.device)
-        self.spawn_height[0, :] = torch.tensor(self.cfg["commands"]["ref_pose_front"]["spawn_height"], dtype=torch.float32, device=self.device)
-        self.spawn_height[1, :] = torch.tensor(self.cfg["commands"]["ref_pose_back"]["spawn_height"], dtype=torch.float32, device=self.device)
+        self.spawn_height_offset = torch.tensor(self.cfg["commands"]["spawn_height_offset"], dtype=torch.float32, device=self.device)
 
         self.num_keyframes = torch.zeros(2, dtype=torch.int, device=self.device) # ([front|back])
         self.num_keyframes[0] = len(self.cfg["commands"]["ref_pose_front"]["poses"])
@@ -381,7 +403,7 @@ class T1_Stand_Up(BaseTask):
         self.fall_detected = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
 
     def _prepare_reward_function(self):
-        """Prepares a list of reward functions, whcih will be called to compute the total reward.
+        """Prepares a list of reward functions, which will be called to compute the total reward.
         Looks for self._reward_<REWARD_NAME>, where <REWARD_NAME> are names of all non zero reward scales in the cfg.
         """
         # remove zero scales + multiply non-zero ones by dt
@@ -412,12 +434,42 @@ class T1_Stand_Up(BaseTask):
         """Place robot into a compatible pose to start from an arbitary point in the get up, e.g. at 75% of the execution time"""
         self.current_stand_up_info[env_ids, 0] = (torch_rand_float(0, 1, (len(env_ids), 1), device=self.device).squeeze(1) < 0.5).int()
         self.current_stand_up_info[env_ids, 1] = torch.randint(low=0, high=self.num_keyframes[0], size=(len(env_ids), 1), device=self.device).int().squeeze(1)
-        # Force 50% envs to start from the start
+        # Force 20% envs to start from the start
         self.current_stand_up_info[env_ids, 1] = torch.where(torch_rand_float(0, 1, (len(env_ids), 1), device=self.device).squeeze(1) < 0.20, 0, self.current_stand_up_info[env_ids, 1])
         self.current_stand_up_timer[env_ids] = 0
         self.start_joint_poses[env_ids, :-1] = self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], :self.num_actions+len(self.cfg["commands"]["ref_pose_front"]["torso"][0])]
         self.start_joint_poses[env_ids, -1] = self.torso_height[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1]]
         self.gait_process[env_ids] = 0
+
+        # Apply spawn_variants (random arm/leg poses) if it's explcitly enabled in the config
+        if self.cfg["commands"].get("use_spawn_variants", False):     
+            # mask of envs that start at the first keyframe
+            mask_first = (self.current_stand_up_info[env_ids, 1] == 0)
+            # only apply spawn variants to envs that start at the first keyframe
+            if mask_first.any():
+                # ids of envs that start at the first keyframe
+                ids0 = env_ids[mask_first]
+
+                # Left arm
+                left_choice = torch.randint(0, self.left_arm_variants.shape[0], (len(ids0),), device=self.device)
+                sel = self.left_arm_variants[left_choice]
+                for i_env, e in enumerate(ids0):
+                    for j, idx in enumerate(self.left_arm_indices):
+                        self.start_joint_poses[e, idx] = float(sel[i_env, j])
+
+                # Right arm
+                right_choice = torch.randint(0, self.right_arm_variants.shape[0], (len(ids0),), device=self.device)
+                sel = self.right_arm_variants[right_choice]
+                for i_env, e in enumerate(ids0):
+                    for j, idx in enumerate(self.right_arm_indices):
+                        self.start_joint_poses[e, idx] = float(sel[i_env, j])
+                        
+                # Legs
+                legs_choice = torch.randint(0, self.legs_variants.shape[0], (len(ids0),), device=self.device)
+                sel = self.legs_variants[legs_choice]
+                for i_env, e in enumerate(ids0):
+                    for j, idx in enumerate(self.legs_indices):
+                        self.start_joint_poses[e, idx] = float(sel[i_env, j])
 
         self.execution_time[env_ids] = (self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], -2] - self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], -1]).clip(min=0.0)
 
@@ -449,7 +501,12 @@ class T1_Stand_Up(BaseTask):
         self.extras["time_outs"] = self.time_out_buf
 
     def _reset_dofs(self, env_ids):
-        self.dof_pos[env_ids] = apply_randomization(self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], :self.num_actions], self.cfg["randomization"].get("init_dof_pos"))
+        # Use the modified start_joint_poses with spawn variants applied to them if spawn variants are enabled, otherwise use the original start_joint_poses
+        if self.cfg["commands"].get("use_spawn_variants", False):
+            base_poses = self.start_joint_poses[env_ids, : self.num_actions]
+            self.dof_pos[env_ids] = apply_randomization(base_poses, self.cfg["randomization"].get("init_dof_pos"))
+        else:
+            self.dof_pos[env_ids] = apply_randomization(self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], :self.num_actions], self.cfg["randomization"].get("init_dof_pos"))
         self.dof_vel[env_ids] = 0.0
         self.prev_dof_pos[env_ids] = self.dof_pos[env_ids]
         self.last_dof_vel[env_ids] = 0.0
@@ -467,7 +524,6 @@ class T1_Stand_Up(BaseTask):
         self.root_states[env_ids, :2] += self.env_origins[env_ids, :2]
         self.root_states[env_ids, :2] = apply_randomization(self.root_states[env_ids, :2], self.cfg["randomization"].get("init_base_pos_xy"))
         self.root_states[env_ids, 2] += self.terrain.terrain_heights(self.root_states[env_ids, :2])
-        self.root_states[env_ids, 2] += self.spawn_height[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1]]
         x_rot = torch.zeros(len(env_ids), dtype=torch.float, device=self.device)
         y_rot = torch.zeros(len(env_ids), dtype=torch.float, device=self.device)
         x_rot[:] = self.get_up_poses[self.current_stand_up_info[env_ids, 0], self.current_stand_up_info[env_ids, 1], -4]
@@ -480,6 +536,15 @@ class T1_Stand_Up(BaseTask):
             torch.rand(len(env_ids), device=self.device) * (2 * torch.pi),
         )
 
+        # dynamic spawn height
+        self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
+        self.gym.simulate(self.sim)
+        self.render()
+        min_z = torch.min(self.body_states[env_ids, :, 2], dim=1).values
+        # compute per-env spawn height: if the deepest point of the robot is below 0, lift by -min_z + offset, otherwise just offset
+        spawn_height = torch.where(min_z < 0, -min_z + self.spawn_height_offset, self.spawn_height_offset)
+        self.root_states[env_ids, 2] += spawn_height
+  
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def _teleport_robot(self):

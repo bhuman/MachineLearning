@@ -1,14 +1,14 @@
 basic:
   checkpoint: null # set to -1 to load last saved model
   headless: false
-  max_iterations: 20000 # set the maximum number of learning iterations to train for
+  max_iterations: 10000 # set the maximum number of learning iterations to train for
   sim_device: "cuda:0" # device for physics simulation
   rl_device: "cuda:0" # device for the RL algorithm
   seed: 42 # seed - set to -1 to choose random seed
   description: ""
 
 env:
-  num_envs: 2048
+  num_envs: 1024
   num_observations: 73
   num_privileged_obs: 38
   num_actions: 22
@@ -27,27 +27,22 @@ viewer:
   record_interval: 5.  # [s]
   record_env_idx: 0
 
-#algorithm:
-#  e_clip: 0.1
-#  learning_rate: 1.e-5
-#  gamma: 0.98
-#  lam: 0.95
-#  bound_coef: 1.0
-#  entropy_coef: -0.0025
-#  desired_kl: 0.003
-#  symmetry_coef: 1.e-2
-#  use_waist: false
-
 algorithm:
-  e_clip: 0.2
+  e_clip: 0.1
   learning_rate: 1.e-5
-  gamma: 0.995
+  gamma: 0.98
   lam: 0.95
   bound_coef: 1.0
-  entropy_coef: -0.005
-  desired_kl: 0.01
+  entropy_coef: -0.007
+  desired_kl: 0.01 # later down to 0.003
   symmetry_coef: 1.e-2
   use_waist: false
+  entropy_range:
+    min: -11
+    max: -10
+  learning_rate_range:
+    min: 1.e-5
+    max: 1.e-2
 
 sim:
   dt: 0.002
@@ -70,7 +65,7 @@ sim:
     contact_collection: 1 # 0: CC_NEVER (don't collect contact info), 1: CC_LAST_SUBSTEP (collect only contacts on last substep), 2: CC_ALL_SUBSTEPS (broken - do not use!)
 
 asset:
-  file: "resources/K1/K1_locomotion_all_joints_simple.urdf"
+  file: "resources/K1/K1_locomotion_all_joints_simple_2.urdf"
   file_mesh: "resources/K1/K1_locomotion_all_joints_mesh.urdf"
   mujoco_file: "resources/K1/K1_locomotion.xml"
   name: "K1"
@@ -130,7 +125,7 @@ terrain:
   vertical_scale: 0.005
   slope_threshold: 2.0
   friction:
-    range: [0.2, 2.0]
+    range: [0.1, 2.0]
     operation: "additive"
     distribution: "uniform"
   patch_size: 10
@@ -199,9 +194,39 @@ commands:
                              [0.1, 1, 0.1, 0.25],
                              [0.1, 1, 0.1, 0.25]]
     arm_vel_penalty: [5, 5, 1, 1, 1, 1, 1]
-    spawn_height: [0.35, 0.4, 0.45, 0.45, 0.35, 0.4, 0.58]
     feet_slip_jump_penalty: [false, false, false, true, true, true, true]
     extra_balance_penalty: [false, false, false, false, false, true, true]
+  spawn_height_offset: 0.12
+  use_spawn_variants: false
+  spawn_variants:
+    left_arm:
+        #  lSP,   lSR,   lEY,  lER
+      - [  0.0,   0.0,   0.0,   0.0  ] # T-pose
+      - [ -3.14, -1.57,  0.0,   0.0  ] # Arm up
+      - [ -1.57, -1.57,  0.0,   0.0  ] # Arm front 
+      - [ -0.44, -1.40,  0.79, -2.18 ] # Arm front under torso
+      - [  0.4,  -1.40,  0.0,   0.0, ] # Arm down
+      - [ -3.05, -1.57,  0.79, -2.36 ] # Arm behind head
+      - [  0.43, -1.57,  2.18, -0.78 ] # Arm behind back
+    right_arm:
+        #  rSP,   rSR,   rEY,  rER
+      - [  0.0,   0.0,   0.0,  0.0  ] # T-pose
+      - [ -3.14,  1.57,  0.0,  0.0  ] # Arm up
+      - [ -1.57,  1.57,  0.0,  0.0  ] # Arm front
+      - [ -0.44,  1.40,  0.79, 2.18 ] # Arm front under torso
+      - [  0.4,   1.40,  0.0,  0.0  ] # Arm down
+      - [ -3.05,  1.57, -0.79, 2.36 ] # Arm behind head
+      - [  0.43,  1.57,  2.18, 0.78 ] # Arm behind back
+        #  lHP,   lHR,   lHY,   lKP,   lAP,   lAR,   rHP,   rHR,   rHY,   rKP,   rAP,   rAR
+    legs:
+      - [  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0 ] # Straight legs
+      - [ -1.57,  0.0,   0.0,   0.0,   0.0,   0.0,   1.57,  0.0,   0.0,   0.0,   0.0,   0.0 ] # Front split left
+      - [  1.57,  0.0,   0.0,   0.0,   0.0,   0.0,  -1.57,  0.0,   0.0,   0.0,   0.0,   0.0 ] # Front split right
+      - [  0.0,   1.57,  0.0,   0.0,   0.0,   0.0,   0.0,  -1.57,  0.0,   0.0,   0.0,   0.0 ] # Side split
+      - [ -1.48,  1.40,  0.0,   1.57,  0.0,   0.0,   0.0,  -1.48, -1.40,  1.57,  0.0,   0.0 ] # Sumo squat
+      - [  0.61, -0.34, -0.79,  0.44,  0.0,   0.0,   0.61,  0.26,  0.0,   0.0,   0.0,   0.0 ] # Crossed left on top
+      - [ -0.61, -0.34,   0.0,   0.0,  0.0,   0.0,  -0.61,  0.26, -0.79,  0.44,  0.0,   0.0 ] # Crossed right on top
+
   ref_pose_back:
     poses: [[0.0,  0.35,
              0.0, -1.40,  0.0,  0.0,
@@ -258,7 +283,6 @@ commands:
                              [0.1, 1, 0.1, 0.25],
                              [0.1, 1, 0.1, 0.25]]
     arm_vel_penalty: [5, 5, 1, 1, 1, 1, 1]
-    spawn_height: [0.2, 0.2, 0.2, 0.3, 0.45, 0.45, 0.58]
     feet_slip_jump_penalty: [false, false, false, true, true, true, true]
     extra_balance_penalty: [false, false, false, false, true, true, true]
 
@@ -348,7 +372,7 @@ randomization:
     distribution: "uniform"
 
   friction:
-    range: [0.2, 2.0]
+    range: [0.1, 2.0]
     operation: "additive"
     distribution: "uniform"
   compliance:

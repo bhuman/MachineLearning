@@ -1,5 +1,5 @@
 /**
- * @file RLGetUpEngine.h
+ * @file GetUpEngine.h
  *
  * @Author Philip Reichenberg
  */
@@ -9,12 +9,14 @@
 #include "Framework/Module.h"
 #include "Framework/Settings.h"
 #include "Representations/Configuration/JointLimits.h"
+#include "Representations/Configuration/RobotDimensions.h"
 #include "Representations/Infrastructure/GameState.h"
 #include "Representations/Infrastructure/FrameInfo.h"
 #include "Representations/Infrastructure/JointAngles.h"
 #include "Representations/Infrastructure/JointRequest.h"
 #include "Representations/MotionControl/GetUpGenerator.h"
 #include "Representations/MotionControl/MotionInfo.h"
+#include "Representations/MotionControl/MotionRequest.h"
 #include "Representations/MotionControl/WalkGenerator.h"
 #include "Representations/Sensing/FallDownState.h"
 #include "Representations/Sensing/InertialData.h"
@@ -26,7 +28,7 @@
 
 using namespace NeuralNetworkONNX;
 
-STREAMABLE(RLGetUpKeyframeInfo,
+STREAMABLE(GetUpKeyframeInfo,
 {,
   (Rangea) torsoYRange,
   (Rangea) torsoXRange,
@@ -39,7 +41,7 @@ STREAMABLE(RecoverMotion,
   (float) duration,
 });
 
-MODULE(RLGetUpEngine,
+MODULE(GetUpEngine,
 {,
   REQUIRES(FallDownState),
   REQUIRES(FrameInfo),
@@ -48,6 +50,7 @@ MODULE(RLGetUpEngine,
   REQUIRES(JointAngles),
   REQUIRES(JointLimits),
   USES(JointRequest),
+  REQUIRES(RobotDimensions),
   REQUIRES(TorsoMatrix),
   REQUIRES(WalkGenerator),
   PROVIDES(GetUpGenerator),
@@ -57,34 +60,41 @@ MODULE(RLGetUpEngine,
     (std::string) policyName,
     (unsigned) numInput,
     (unsigned) numOutput,
+    (std::string) policyNameFast,
+    (unsigned) numInputFast,
+    (unsigned) numOutputFast,
+    (bool) fastActive,
     (Rangef) clipActions,
     (bool) useWaist,
     (float) recoveryTime,
     (float) speedFactor, // Get up can be between 100 and 200% speed -> value between 1 and 2. NOTE: only trained with 1.5 to 2 :)
     (Angle) breakUpJointSpeed,
     (Angle) breakUpHeadAngle,
-    (Angle) maxPositionDifference,
     (int) breakUpTime,
     (int) stopSoundTime,
     (float) earliestDoneTime,
     (float) minStandHeightWhenDone,
     (int) helpMeSoundTimeWindow,
-    (std::vector<RLGetUpKeyframeInfo>) frontInfo,
-    (std::vector<RLGetUpKeyframeInfo>) backInfo,
+    (int) anklePitchStiffness,
+    (std::vector<GetUpKeyframeInfo>) frontInfo,
+    (std::vector<GetUpKeyframeInfo>) backInfo,
     (std::vector<RecoverMotion>) recoverFront,
     (std::vector<RecoverMotion>) recoverBack,
     (std::vector<RecoverMotion>) recoverNormal,
+    (Angle) maxTorsoAngleDiff,
   }),
 });
 
-class RLGetUpEngine : public RLGetUpEngineBase
+class GetUpEngine : public GetUpEngineBase
 {
 public:
   /** Constructor */
-  RLGetUpEngine();
+  GetUpEngine();
   const float motionCycleTime = Global::getSettings().motionCycleTime;
   CompiledNN policy; /**< The compiled neural network. */
+  CompiledNN policyFast; /**< The compiled neural network. */
   JointAngles offset;
+  JointAngles offsetFast;
   unsigned int lastFrameInfo = 0;
   JointAngles lastMeasurement;
   JointAngles fallAngles;
@@ -103,12 +113,12 @@ private:
    */
   void compile(bool output);
 
-  const std::string modelPath = std::string(File::getBHDir()) + "/Config/NeuralNets/RLGetUpEngine/";
+  const std::string modelPath = std::string(File::getBHDir()) + "/Config/NeuralNets/GetUpEngine/";
 };
 
-struct RLGetUpPhase : MotionPhase
+struct GetUpPhase : MotionPhase
 {
-  RLGetUpPhase(RLGetUpEngine& engine);
+  GetUpPhase(GetUpEngine& engine);
 
 private:
   bool isDone(const MotionRequest& motionRequest) const override;
@@ -131,6 +141,7 @@ private:
   std::vector<Joints::Joint> getBoosterLegJointSequence();
 
   JointAngles startAngles;
+  JointAngles lastAction;
   unsigned int startTime = 0;
   float maxStandUpTime = 0.f;
   float executedTime = 0.f;
@@ -140,6 +151,11 @@ private:
   unsigned lastStopSoundTimestamp = 0;
 
   unsigned lastHelpMeSound = 0;
+
+  Vector2a minTorsoAngle = Vector2a::Zero();
+  Vector2a maxTorsoAngle = Vector2a::Zero();
+  Vector2a closestToZeroAngle = Vector2a::Zero();
+  bool allowBreakUp = false;
 
   std::vector<RecoverMotion>* recoverMotion;
   std::size_t recoverMotionIndex = 0;
@@ -157,7 +173,7 @@ private:
 
   bool isFront = true;
 
-  RLGetUpEngine& engine; /**< A reference to the running motion engine. */
+  GetUpEngine& engine; /**< A reference to the running motion engine. */
 
   friend class WalkingEngine;
 };

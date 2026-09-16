@@ -48,10 +48,11 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0.1"
+        xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
-        <box size="0.12 0.18 0.2" />
+        <mesh
+          filename="meshes/Trunk.STL" scale="1.0 1.0 1.0"/>
       </geometry>
     </collision>
     <collision>
@@ -154,11 +155,11 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0 0 0.02"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="meshes/Head_2.STL" />
+          filename="meshes/Head_2.STL" scale="1 1 0.8"/>
       </geometry>
     </collision>
   </link>
@@ -211,6 +212,14 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
+    <collision>
+      <origin
+        xyz="-0.0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.00001" length="0.00001" />
+      </geometry>
+    </collision>
   </link>
   <joint
     name="ALeft_Shoulder_Pitch"
@@ -437,6 +446,14 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
+    <collision>
+      <origin
+        xyz="-0.0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.00001" length="0.0001" />
+      </geometry>
+    </collision>
   </link>
   <joint
     name="ARight_Shoulder_Pitch"
@@ -664,6 +681,14 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
+    <collision>
+      <origin
+        xyz="0 0.0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.00001" length="0.00001" />
+      </geometry>
+    </collision>
   </link>
   <joint
     name="Left_Hip_Pitch"
@@ -716,10 +741,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0 0.01 0"
         rpy="0 1.5708 0" />
       <geometry>
-        <cylinder radius="0.036" length="0.094" />
+        <cylinder radius="0.02" length="0.05" />
       </geometry>
     </collision>
   </link>
@@ -941,11 +966,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.026 0 -0.022"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Left_Foot.STL" />
+        <box size="0.180 0.07 0.032" />
       </geometry>
     </collision>
   </link>
@@ -999,6 +1023,14 @@
           rgba="0.75294 0.75294 0.75294 1" />
       </material>
     </visual>
+    <collision>
+      <origin
+        xyz="0 0.0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.00001" length="0.00001" />
+      </geometry>
+    </collision>
   </link>
   <joint
     name="Right_Hip_Pitch"
@@ -1051,10 +1083,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0 -0.01 0"
         rpy="0 1.5708 0" />
       <geometry>
-        <cylinder radius="0.036" length="0.094" />
+        <cylinder radius="0.02" length="0.05" />
       </geometry>
     </collision>
   </link>
@@ -1276,11 +1308,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.026 0 -0.022"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Right_Foot.STL" />
+        <box size="0.180 0.07 0.032" />
       </geometry>
     </collision>
   </link>

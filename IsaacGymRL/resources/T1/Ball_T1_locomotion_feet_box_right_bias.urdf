@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
@@ -36,11 +36,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.06 0 0.12"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Trunk.STL"/>
+        <box size="0.15 0.2 0.3" />
       </geometry>
     </collision>
   </link>
@@ -74,19 +73,10 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/H1.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="AAHead_yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0625 0 0.243"
       rpy="0 0 0" />
@@ -124,7 +114,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="meshes/H2.STL"/>
+          filename="meshes/H2.STL" />
       </geometry>
       <material
         name="">
@@ -132,19 +122,10 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0.02"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/H2.STL" scale="1 1 0.8"/>
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Head_pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0 0.06185"
       rpy="0 0 0" />
@@ -190,22 +171,13 @@
           rgba="0.76 0.76 0.76 0.2" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AL1.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Shoulder_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0575 0.1063 0.219"
-      rpy="0 0 0" />
+      rpy="0 0.2 0" />
     <parent
       link="Trunk" />
     <child
@@ -248,22 +220,13 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AL2.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Shoulder_Roll"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0.047 0"
-      rpy="0.0 0 0" />
+      rpy="-1.35 0 0" />
     <parent
       link="AL1" />
     <child
@@ -306,19 +269,10 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AL3.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Elbow_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.00025 0.0605 0"
       rpy="0 0 0" />
@@ -364,22 +318,13 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/left_hand_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Elbow_Yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 0.1471 0"
-      rpy="0 0 0" />
+      rpy="0 0 -0.5" />
     <parent
       link="AL3" />
     <child
@@ -422,22 +367,13 @@
           rgba="0.76 0.76 0.76 0.2" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AR1.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Shoulder_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.0575 -0.1063 0.219"
-      rpy="0 0 0" />
+      rpy="0 0.2 0" />
     <parent
       link="Trunk" />
     <child
@@ -480,22 +416,13 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AR2.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Shoulder_Roll"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.047 0"
-      rpy="0 0 0" />
+      rpy="1.35 0 0" />
     <parent
       link="AR1" />
     <child
@@ -538,19 +465,10 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/AR3.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Elbow_Pitch"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.00025 -0.0605 0"
       rpy="0 0 0" />
@@ -596,22 +514,13 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/right_hand_link.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Elbow_Yaw"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0 -0.1471 0"
-      rpy="0 0 0" />
+      rpy="0 0 0.5" />
     <parent
       link="AR3" />
     <child
@@ -654,15 +563,6 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Waist.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Waist"
@@ -712,15 +612,6 @@
           rgba="0.76 0.76 0.76 0.2" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Hip_Pitch_Left.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Hip_Pitch"
@@ -770,15 +661,6 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Hip_Roll_Left.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Hip_Roll"
@@ -833,8 +715,7 @@
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Hip_Yaw_Left.STL" />
+        <cylinder radius="0.05" length="0.16" />
       </geometry>
     </collision>
   </link>
@@ -888,11 +769,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0.04"
+        xyz="0 0 -0.14"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Shank_Left.STL" />
+        <cylinder radius="0.06" length="0.18" />
       </geometry>
     </collision>
   </link>
@@ -944,15 +824,6 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Ankle_Cross_Left.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Left_Ankle_Pitch"
@@ -1004,11 +875,18 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.01 0 -0.015"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/left_foot_link.STL" />
+        <box size="0.223 0.1 0.03" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin
+        xyz="0.11 -0.015 0.01"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.005 0.01" />
       </geometry>
     </collision>
   </link>
@@ -1060,15 +938,6 @@
           rgba="0.76 0.76 0.76 0.2" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Hip_Pitch_Right.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Hip_Pitch"
@@ -1118,15 +987,6 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Hip_Roll_Right.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Hip_Roll"
@@ -1181,8 +1041,7 @@
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Hip_Yaw_Right.STL" />
+        <cylinder radius="0.05" length="0.16" />
       </geometry>
     </collision>
   </link>
@@ -1236,11 +1095,10 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0.04"
+        xyz="0 0 -0.14"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/Shank_Right.STL" />
+        <cylinder radius="0.06" length="0.18" />
       </geometry>
     </collision>
   </link>
@@ -1292,15 +1150,6 @@
           rgba="0.4 0.4 0.4 0.3" />
       </material>
     </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="meshes/Ankle_Cross_Right.STL" />
-      </geometry>
-    </collision>
   </link>
   <joint
     name="Right_Ankle_Pitch"
@@ -1352,11 +1201,18 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.01 0 -0.015"
         rpy="0 0 0" />
       <geometry>
-        <mesh
-          filename="meshes/right_foot_link.STL" />
+        <box size="0.223 0.1 0.03" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin
+        xyz="0.11 -0.015 0.01"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.005 0.01" />
       </geometry>
     </collision>
   </link>
