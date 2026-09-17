@@ -207,7 +207,7 @@ You can additionally use the script `convert.py` to convert a .py policy into a 
 In the folder `/pre-trained` we provide working stand up, walk and kick policies for the T1 as well as K1.
 Also, we provide our c++ code which we use to execute those policies. Note, that this code is **not** a stand-alone script.
 It is only meant as a reference to show, how to correctly use the policies. On the real robot it is expected that the correct inputs for the policy are used.
-This includes the joint sequence as well as the sensor data.
+This includes the joint sequence as well as the sensor data. Also, all policy outputs are clipped into the joint limits before sending them to the Booster Motor-Interface, except for the fast K1 stand-up which uses the torque-control directly.
 
 Additionally, to prevent unsafe states, like a stand up try that failed but keeps going, we define torso orientations which we interpolate inbetween. If the real robot leaves this defined state we break up the stand up to prevent damage to the robot hardware.
 
