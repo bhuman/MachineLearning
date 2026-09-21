@@ -895,8 +895,7 @@ void WalkPhase::getNextTargetRequest(JointAngles& target)
     for(Joints::Joint j : jointList)
       target.angles[j] = engine.walkNeuronalNetworkParameters.actionClipRange.limit(*output++) + engine.offset.angles[j];
 
-    const float freqOffset = engine.theMotionRequest.shouldInterceptBall ? 0.2f : 0.f;
-    rawFrequency = engine.walkNeuronalNetworkParameters.actionClipRange.limit(*output++ + freqOffset);
+    rawFrequency = engine.frequencyParametersWalk.clipRange.limit(*output++);
     frequency = engine.frequencyParametersWalk.clipRange.limit(rawFrequency) + engine.frequencyParametersWalk.base;
   }
   else
@@ -1012,7 +1011,10 @@ void WalkPhase::getNextTargetRequest(JointAngles& target)
     for(Joints::Joint j : jointList)
       target.angles[j] = engine.walkNeuronalNetworkParameters.actionClipRange.limit(*output++) + engine.offset.angles[j];
 
-    rawFrequency = engine.walkNeuronalNetworkParameters.actionClipRange.limit(*output++);
+    // Technically
+    // rawFrequency = engine.walkNeuronalNetworkParameters.actionClipRange.limit(*output++)
+    // Is the correct code. But at RoboCup and Beijing the "wrong" version below was used.
+    rawFrequency = engine.frequencyParametersKick.clipRange.limit(*output++);
     frequency = engine.frequencyParametersKick.clipRange.limit(rawFrequency) + engine.frequencyParametersKick.base;
   }
   oldBall = ball;
