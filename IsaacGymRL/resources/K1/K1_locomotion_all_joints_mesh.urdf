@@ -117,8 +117,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-1."
-      upper="1."
+      lower="-1.04"
+      upper="1.04"
       effort="6"
       velocity="18"
     />
@@ -176,8 +176,8 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="-0.349"
-      upper="0.855"
+      lower="-0.3"
+      upper="0.89"
       effort="6"
       velocity="18"
     />
@@ -235,7 +235,7 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="-3.316"
+      lower="-2.95"
       upper="1.22"
       effort="14"
       velocity="18"
@@ -353,8 +353,8 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="-2.27"
-      upper="2.27"
+      lower="-1.9"
+      upper="1.9"
       effort="14"
       velocity="18"
     />
@@ -412,8 +412,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-2.44"
-      upper="0"
+      lower="-2.25"
+      upper="0.78"
       effort="14"
       velocity="18"
     />
@@ -471,7 +471,7 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="-3.316"
+      lower="-2.95"
       upper="1.22"
       effort="14"
       velocity="18"
@@ -589,8 +589,8 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="-2.27"
-      upper="2.27"
+      lower="-1.9"
+      upper="1.9"
       effort="14"
       velocity="18"
     />
@@ -648,8 +648,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="2.44"
+      lower="-0.78"
+      upper="2.25"
       effort="14"
       velocity="18"
     />
@@ -767,7 +767,7 @@
     <axis
       xyz="1 0 0" />
     <limit
-      lower="-0.4"
+      lower="-0.38"
       upper="1.57"
       effort="35"
       velocity="12.9"
@@ -826,8 +826,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-1."
-      upper="1."
+      lower="-1.03"
+      upper="1.03"
       effort="20"
       velocity="18.1"
     />
@@ -886,7 +886,7 @@
       xyz="0 1 0" />
     <limit
       lower="0."
-      upper="2.23"
+      upper="2.35"
       effort="40"
       velocity="12.5"
     />
@@ -1114,7 +1114,7 @@
       xyz="1 0 0" />
     <limit
       lower="-1.57"
-      upper="0.4"
+      upper="0.38"
       effort="35"
       velocity="12.9"
   />
@@ -1172,8 +1172,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-1."
-      upper="1."
+      lower="-1.03"
+      upper="1.03"
       effort="20"
       velocity="18.1"
     />
@@ -1232,7 +1232,7 @@
       xyz="0 1 0" />
     <limit
       lower="0."
-      upper="2.23"
+      upper="2.35"
       effort="40"
       velocity="12.5"
     />
